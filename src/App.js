@@ -77,7 +77,7 @@ function App() {
         amount: order.amount,
         currency: "INR",
         name: "A4Station",
-        description: "Printing Payment",
+        description: "",
         order_id: order.id,
 
         handler: async function (response) {
@@ -110,7 +110,7 @@ function App() {
       <div style={styles.card}>
         {!paid ? (
           <>
-            <h1 style={styles.title}>A4Station Print</h1>
+            <h1 style={styles.title}>A4Station </h1>
 
             <label style={styles.uploadBox}>
               📂 Select Files
