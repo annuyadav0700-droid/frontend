@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+
 import axios from "axios";
 import * as pdfjsLib from "pdfjs-dist";
 
@@ -6,6 +7,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc =
   "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 
 function App() {
+
   const [files, setFiles] = useState([]);
   const [pages, setPages] = useState(0);
   const [copies, setCopies] = useState(1);
@@ -58,19 +60,23 @@ function App() {
   };
 
   const uploadFiles = async () => {
+    try {
+      //UPLOAD FILES
     const formData = new FormData();
     files.forEach((file) => formData.append("files", file));
-    await axios.post("https://a4stationbackend.onrender.com/upload", formData);
-  };
+    const uploadRes = await axios.post("https://a4stationbackend.onrender.com/upload", formData);
+  if (!uploadRes.data.success) {alert("File upload failed");return;}
 
-  const handlePayment = async () => {
-    try {
-      await uploadFiles();
+  //for simplicity, assuming 1 file uploaded at a time 
+  const uploadedFileName = files[0].name; //<--its important
+
+  //Create Order
 
       const { data: order } = await axios.post(
         "https://a4stationbackend.onrender.com/create-order",
         { pages, copies, printType }
       );
+      // RAZORPAY OPTIONS
 
       const options = {
         key: "rzp_test_SEWq0s9qENRJ4Z",
@@ -81,9 +87,14 @@ function App() {
         order_id: order.id,
 
         handler: async function (response) {
+          //verifyy payment with filename
           const verify = await axios.post(
             "https://a4stationbackend.onrender.com/verify-payment",
-            response
+            {razorpay_order_id:response.razorpay_order_id,
+              razorpay_payment_id:response.razorpay_payment_id,
+              razorpay_signature:response.razorpay_signature,
+              fileName:uploadedFileName,//SEND FILE NAME
+            }
           );
 
           if (verify.data.success) {
