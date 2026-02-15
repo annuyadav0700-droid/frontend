@@ -80,13 +80,17 @@ function App() {
   // Handle Razorpay Payment
   const handlePayment = async () => {
     try {
+      console.log("Payment started");
       const uploadedFileName = await uploadFiles();
-      if (!uploadedFileName) return;
+      if (!uploadedFileName) {
+        console.log("uploaded failed"); return;
+      }
 
       const { data: order } = await axios.post(
         "https://a4stationbackend.onrender.com/create-order",
         { pages, copies, printType }
       );
+      console.log("Order:",order);
 
       const options = {
         key: "rzp_test_SEWq0s9qENRJ4Z",
@@ -119,6 +123,7 @@ function App() {
 
         theme: { color: "#4facfe" },
       };
+      console.log("Opening Razorpay");
 
       const rzp = new window.Razorpay(options);
       rzp.open();
