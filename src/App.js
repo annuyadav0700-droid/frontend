@@ -18,10 +18,7 @@ function App() {
   const pricePerPage = printType === "color" ? colorPrice : bwPrice;
   const totalAmount = pages * copies * pricePerPage;
 
-<<<<<<< HEAD
   // File selection & pages calculation
-=======
->>>>>>> 3694187e2ccd2089124a4160bc3f922afded2f4d
   const handleFileChange = async (e) => {
     const selectedFiles = Array.from(e.target.files);
     let pdfCount = 0;
@@ -47,10 +44,6 @@ function App() {
 
     setFiles(validFiles);
 
-<<<<<<< HEAD
-    // Calculate total pages
-=======
->>>>>>> 3694187e2ccd2089124a4160bc3f922afded2f4d
     let totalPages = 0;
     for (let file of validFiles) {
       if (file.type === "application/pdf") {
@@ -61,7 +54,7 @@ function App() {
         totalPages += 1;
       }
     }
-<<<<<<< HEAD
+
     setPages(totalPages);
   };
 
@@ -69,6 +62,7 @@ function App() {
   const uploadFiles = async () => {
     const formData = new FormData();
     files.forEach((file) => formData.append("files", file));
+
     const res = await axios.post(
       "https://a4stationbackend.onrender.com/upload",
       formData
@@ -78,11 +72,9 @@ function App() {
       alert("File upload failed");
       return null;
     }
-    console.log("uploaded filename:",res.data.fileName);
 
-    // Return uploaded file name
-    // multer backend automatically stores filename in req.files[].filename
-    return res.data.filename  
+    console.log("Uploaded filename:", res.data.filename);
+    return res.data.filename;
   };
 
   // Handle Razorpay Payment
@@ -90,21 +82,6 @@ function App() {
     try {
       const uploadedFileName = await uploadFiles();
       if (!uploadedFileName) return;
-=======
-
-    setPages(totalPages);
-  };
-
-  const uploadFiles = async () => {
-    const formData = new FormData();
-    files.forEach((file) => formData.append("files", file));
-    await axios.post("https://a4stationbackend.onrender.com/upload", formData);
-  };
-
-  const handlePayment = async () => {
-    try {
-      await uploadFiles();
->>>>>>> 3694187e2ccd2089124a4160bc3f922afded2f4d
 
       const { data: order } = await axios.post(
         "https://a4stationbackend.onrender.com/create-order",
@@ -112,11 +89,7 @@ function App() {
       );
 
       const options = {
-<<<<<<< HEAD
-        key: "rzp_test_SEWq0s9qENRJ4Z", // apni key
-=======
         key: "rzp_test_SEWq0s9qENRJ4Z",
->>>>>>> 3694187e2ccd2089124a4160bc3f922afded2f4d
         amount: order.amount,
         currency: "INR",
         name: "A4Station",
@@ -124,27 +97,18 @@ function App() {
         order_id: order.id,
 
         handler: async function (response) {
-<<<<<<< HEAD
-          // Verify payment & send file name to backend
           const verify = await axios.post(
             "https://a4stationbackend.onrender.com/verify-payment",
             {
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
-              fileName: uploadedFileName, // ✅ important
+              fileName: uploadedFileName,
             }
           );
 
           console.log("VERIFY RESPONSE:", verify.data);
 
-=======
-          const verify = await axios.post(
-            "https://a4stationbackend.onrender.com/verify-payment",
-            response
-          );
-
->>>>>>> 3694187e2ccd2089124a4160bc3f922afded2f4d
           if (verify.data.success) {
             setCode(verify.data.code);
             setPaid(true);
@@ -169,11 +133,7 @@ function App() {
       <div style={styles.card}>
         {!paid ? (
           <>
-<<<<<<< HEAD
             <h1 style={styles.title}>A4Station</h1>
-=======
-            <h1 style={styles.title}>A4Station Print</h1>
->>>>>>> 3694187e2ccd2089124a4160bc3f922afded2f4d
 
             <label style={styles.uploadBox}>
               📂 Select Files
@@ -219,27 +179,18 @@ function App() {
 
             {files.length > 0 && (
               <button style={styles.payBtn} onClick={handlePayment}>
-<<<<<<< HEAD
                 Pay & Generate OTP
-=======
-                Pay & Print
->>>>>>> 3694187e2ccd2089124a4160bc3f922afded2f4d
               </button>
             )}
           </>
         ) : (
           <div style={styles.successBox}>
             <h2>✅ Payment Successful</h2>
-<<<<<<< HEAD
             <p>Your Print Code (OTP)</p>
-            <h1 style={styles.code}>{code}</h1> {/* ✅ OTP displayed */}
+            <h1 style={styles.code}>{code}</h1>
             <p style={{ marginTop: "10px", fontSize: "14px", color: "#555" }}>
               Use this code on the kiosk screen to print your file
             </p>
-=======
-            <p>Your Print Code</p>
-            <h1 style={styles.code}>{code}</h1>
->>>>>>> 3694187e2ccd2089124a4160bc3f922afded2f4d
           </div>
         )}
       </div>
@@ -342,8 +293,4 @@ const styles = {
   },
 };
 
-<<<<<<< HEAD
 export default App;
-=======
-export default App;
->>>>>>> 3694187e2ccd2089124a4160bc3f922afded2f4d
