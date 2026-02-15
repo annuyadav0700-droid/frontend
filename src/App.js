@@ -18,34 +18,14 @@ function App() {
   const pricePerPage = printType === "color" ? colorPrice : bwPrice;
   const totalAmount = pages * copies * pricePerPage;
 
-  // File selection & pages calculation
+  // FILE SELECT + PAGE COUNT
   const handleFileChange = async (e) => {
     const selectedFiles = Array.from(e.target.files);
-    let pdfCount = 0;
-    let imageCount = 0;
-    let validFiles = [];
-
-    for (let file of selectedFiles) {
-      if (file.type === "application/pdf") {
-        pdfCount++;
-        if (pdfCount > 1) {
-          alert("Only 1 PDF allowed!");
-          continue;
-        }
-      } else if (file.type.startsWith("image/")) {
-        imageCount++;
-        if (imageCount > 5) {
-          alert("Maximum 5 images allowed!");
-          continue;
-        }
-      }
-      validFiles.push(file);
-    }
-
-    setFiles(validFiles);
+    setFiles(selectedFiles);
 
     let totalPages = 0;
-    for (let file of validFiles) {
+
+    for (let file of selectedFiles) {
       if (file.type === "application/pdf") {
         const buffer = await file.arrayBuffer();
         const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
@@ -58,7 +38,7 @@ function App() {
     setPages(totalPages);
   };
 
-  // Upload files to backend
+  // UPLOAD FILE
   const uploadFiles = async () => {
     const formData = new FormData();
     files.forEach((file) => formData.append("files", file));
@@ -69,28 +49,29 @@ function App() {
     );
 
     if (!res.data.success) {
-      alert("File upload failed");
+      alert("Upload failed");
       return null;
     }
 
     console.log("Uploaded filename:", res.data.filename);
-    return res.data.filename;
+    return res.data.filename; // IMPORTANT
   };
 
-  // Handle Razorpay Payment
+  // PAYMENT
   const handlePayment = async () => {
     try {
-      console.log("Payment started");
-      const uploadedFileName = await uploadFiles();
-      if (!uploadedFileName) {
-        console.log("uploaded failed"); return;
+      if (files.length === 0) {
+        alert("Select file first");
+        return;
       }
+
+      const uploadedFileName = await uploadFiles();
+      if (!uploadedFileName) return;
 
       const { data: order } = await axios.post(
         "https://a4stationbackend.onrender.com/create-order",
         { pages, copies, printType }
       );
-      console.log("Order:",order);
 
       const options = {
         key: "rzp_test_SEWq0s9qENRJ4Z",
@@ -111,7 +92,7 @@ function App() {
             }
           );
 
-          console.log("VERIFY RESPONSE:", verify.data);
+          console.log("Verify Response:", verify.data);
 
           if (verify.data.success) {
             setCode(verify.data.code);
@@ -121,15 +102,15 @@ function App() {
           }
         },
 
-        theme: { color: "#4facfe" },
+        theme: { color: "#2563eb" },
       };
-      console.log("Opening Razorpay");
 
       const rzp = new window.Razorpay(options);
       rzp.open();
+
     } catch (err) {
-      console.error(err);
-      alert("Payment failed");
+      console.error("Payment error:", err);
+      alert("Something went wrong");
     }
   };
 
@@ -140,63 +121,43 @@ function App() {
           <>
             <h1 style={styles.title}>A4Station</h1>
 
-            <label style={styles.uploadBox}>
-              📂 Select Files
-              <input
-                type="file"
-                multiple
-                accept=".pdf,image/*"
-                onChange={handleFileChange}
-                hidden
-              />
-            </label>
+            <input
+              type="file"
+              multiple
+              accept=".pdf,image/*"
+              onChange={handleFileChange}
+            />
 
-            <p style={styles.info}>Files Selected: {files.length}</p>
-            <p style={styles.info}>Total Pages: {pages}</p>
+            <p>Files: {files.length}</p>
+            <p>Total Pages: {pages}</p>
 
-            <div style={styles.row}>
-              <label>Copies:</label>
+            <div>
+              <label>Copies: </label>
               <input
                 type="number"
-                min="1"
                 value={copies}
-                onChange={(e) => setCopies(e.target.value)}
-                style={styles.input}
+                min="1"
+                onChange={(e) => setCopies(Number(e.target.value))}
               />
             </div>
 
-            <div style={styles.row}>
-              <button
-                style={printType === "bw" ? styles.activeBtn : styles.btn}
-                onClick={() => setPrintType("bw")}
-              >
-                B/W ₹5
-              </button>
-              <button
-                style={printType === "color" ? styles.activeBtn : styles.btn}
-                onClick={() => setPrintType("color")}
-              >
-                Color ₹10
-              </button>
+            <div>
+              <button onClick={() => setPrintType("bw")}>B/W ₹5</button>
+              <button onClick={() => setPrintType("color")}>Color ₹10</button>
             </div>
 
-            <h2 style={styles.amount}>₹ {totalAmount}</h2>
+            <h2>Total: ₹{totalAmount}</h2>
 
-            {files.length > 0 && (
-              <button style={styles.payBtn} onClick={handlePayment}>
-                Pay & Generate OTP
-              </button>
-            )}
+            <button onClick={handlePayment}>
+              Pay & Generate OTP
+            </button>
           </>
         ) : (
-          <div style={styles.successBox}>
+          <>
             <h2>✅ Payment Successful</h2>
-            <p>Your Print Code (OTP)</p>
-            <h1 style={styles.code}>{code}</h1>
-            <p style={{ marginTop: "10px", fontSize: "14px", color: "#555" }}>
-              Use this code on the kiosk screen to print your file
-            </p>
-          </div>
+            <p>Your OTP:</p>
+            <h1 style={{ fontSize: "40px", color: "green" }}>{code}</h1>
+          </>
         )}
       </div>
     </div>
@@ -210,91 +171,16 @@ const styles = {
     justifyContent: "center",
     alignItems: "center",
     background: "#f4f7fb",
-    fontFamily: "Segoe UI, sans-serif",
   },
   card: {
-    background: "#ffffff",
-    padding: "35px",
-    borderRadius: "18px",
-    width: "370px",
-    boxShadow: "0 15px 40px rgba(0,0,0,0.08)",
+    background: "white",
+    padding: "30px",
+    borderRadius: "10px",
+    width: "350px",
     textAlign: "center",
   },
   title: {
-    color: "#1e3a8a",
-    marginBottom: "25px",
-    fontWeight: "600",
-  },
-  uploadBox: {
-    display: "block",
-    padding: "14px",
-    border: "2px dashed #3b82f6",
-    borderRadius: "12px",
-    cursor: "pointer",
-    marginBottom: "15px",
-    color: "#3b82f6",
-    fontWeight: "500",
-  },
-  info: {
-    margin: "6px 0",
-    color: "#555",
-    fontSize: "14px",
-  },
-  row: {
-    display: "flex",
-    justifyContent: "space-between",
-    margin: "12px 0",
-    alignItems: "center",
-  },
-  input: {
-    width: "65px",
-    padding: "6px",
-    borderRadius: "6px",
-    border: "1px solid #ddd",
-  },
-  btn: {
-    padding: "10px 18px",
-    borderRadius: "8px",
-    background: "#e0e7ff",
-    border: "none",
-    cursor: "pointer",
-    color: "#1e3a8a",
-    fontWeight: "500",
-  },
-  activeBtn: {
-    padding: "10px 18px",
-    borderRadius: "8px",
-    background: "#2563eb",
-    color: "white",
-    border: "none",
-    fontWeight: "500",
-  },
-  amount: {
-    margin: "18px 0",
-    fontSize: "22px",
-    color: "#111",
-    fontWeight: "600",
-  },
-  payBtn: {
-    background: "#16a34a",
-    color: "white",
-    padding: "14px",
-    width: "100%",
-    border: "none",
-    borderRadius: "10px",
-    fontSize: "16px",
-    fontWeight: "600",
-    cursor: "pointer",
-    marginTop: "10px",
-  },
-  successBox: {
-    padding: "20px",
-  },
-  code: {
-    fontSize: "42px",
-    color: "#16a34a",
-    letterSpacing: "6px",
-    marginTop: "10px",
+    marginBottom: "20px",
   },
 };
 
