@@ -71,10 +71,11 @@ function App() {
       alert("File upload failed");
       return null;
     }
+    console.log("uploaded filename:",res.data.fileName);
 
     // Return uploaded file name
     // multer backend automatically stores filename in req.files[].filename
-    return res.data.files[0]?.filename || files[0].name; // fallback
+    return res.data.filename  
   };
 
   // Handle Razorpay Payment
