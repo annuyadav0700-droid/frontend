@@ -9,14 +9,21 @@ function App() {
   const [files, setFiles] = useState([]);
   const [pages, setPages] = useState(0);
   const [copies, setCopies] = useState(1);
+  const [printSide, setPrintSide] = useState("single"); // ✅ FIXED
   const [printType, setPrintType] = useState("bw");
   const [paid, setPaid] = useState(false);
   const [code, setCode] = useState("");
 
   const bwPrice = 5;
   const colorPrice = 10;
+
   const pricePerPage = printType === "color" ? colorPrice : bwPrice;
-  const totalAmount = pages * copies * pricePerPage;
+
+  // ✅ double side logic
+  const effectivePages =
+    printSide === "double" ? Math.ceil(pages / 2) : pages;
+
+  const totalAmount = effectivePages * copies * pricePerPage;
 
   // FILE SELECT + PAGE COUNT
   const handleFileChange = async (e) => {
@@ -53,8 +60,7 @@ function App() {
       return null;
     }
 
-    console.log("Uploaded filename:", res.data.filename);
-    return res.data.filename; // IMPORTANT
+    return res.data.filename;
   };
 
   // PAYMENT
@@ -70,7 +76,12 @@ function App() {
 
       const { data: order } = await axios.post(
         "https://a4stationbackend.onrender.com/create-order",
-        { pages, copies, printType }
+        {
+          pages: effectivePages,
+          copies,
+          printType,
+          printSide,
+        }
       );
 
       const options = {
@@ -92,8 +103,6 @@ function App() {
             }
           );
 
-          console.log("Verify Response:", verify.data);
-
           if (verify.data.success) {
             setCode(verify.data.code);
             setPaid(true);
@@ -102,12 +111,11 @@ function App() {
           }
         },
 
-        theme: { color: "#2563eb" },
+        theme: { color: "#000000" },
       };
 
       const rzp = new window.Razorpay(options);
       rzp.open();
-
     } catch (err) {
       console.error("Payment error:", err);
       alert("Something went wrong");
@@ -115,73 +123,97 @@ function App() {
   };
 
   return (
-    <div style={styles.page}>
-      <div style={styles.card}>
-        {!paid ? (
-          <>
-            <h1 style={styles.title}>A4Station</h1>
+    <div className="app">
+      {!paid ? (
+        <div className="card">
+          <h1 className="brand">A4Station</h1>
 
+          {/* Upload */}
+          <label className="upload-box">
             <input
               type="file"
               multiple
               accept=".pdf,image/*"
               onChange={handleFileChange}
+              hidden
             />
+            <div className="plus">+</div>
+            <p>Upload Documents</p>
+          </label>
 
+          {/* Info */}
+          <div className="info">
             <p>Files: {files.length}</p>
             <p>Total Pages: {pages}</p>
+          </div>
 
-            <div>
-              <label>Copies: </label>
-              <input
-                type="number"
-                value={copies}
-                min="1"
-                onChange={(e) => setCopies(Number(e.target.value))}
-              />
+          {/* Copies */}
+          <div className="section">
+            <label>Copies</label>
+            <div className="counter">
+              <button
+                onClick={() => copies > 1 && setCopies(copies - 1)}
+              >
+                -
+              </button>
+              <span>{copies}</span>
+              <button onClick={() => setCopies(copies + 1)}>+</button>
             </div>
+          </div>
 
-            <div>
-              <button onClick={() => setPrintType("bw")}>B/W ₹5</button>
-              <button onClick={() => setPrintType("color")}>Color ₹10</button>
+          {/* Print Type */}
+          <div className="section">
+            <label>Print Type</label>
+            <div className="toggle">
+              <button
+                className={printType === "bw" ? "active" : ""}
+                onClick={() => setPrintType("bw")}
+              >
+                B/W
+              </button>
+              <button
+                className={printType === "color" ? "active" : ""}
+                onClick={() => setPrintType("color")}
+              >
+                Color
+              </button>
             </div>
+          </div>
 
-            <h2>Total: ₹{totalAmount}</h2>
+          {/* Print Side */}
+          <div className="section">
+            <label>Print Side</label>
+            <div className="toggle">
+              <button
+                className={printSide === "single" ? "active" : ""}
+                onClick={() => setPrintSide("single")}
+              >
+                Single
+              </button>
+              <button
+                className={printSide === "double" ? "active" : ""}
+                onClick={() => setPrintSide("double")}
+              >
+                Double
+              </button>
+            </div>
+          </div>
 
-            <button onClick={handlePayment}>
-              Pay & Generate OTP
-            </button>
-          </>
-        ) : (
-          <>
-            <h2>✅ Payment Successful</h2>
-            <p>Your OTP:</p>
-            <h1 style={{ fontSize: "40px", color: "green" }}>{code}</h1>
-          </>
-        )}
-      </div>
+          <h2 className="total">₹ {totalAmount}</h2>
+
+          <button className="pay-btn" onClick={handlePayment}>
+            Pay Now
+          </button>
+        </div>
+      ) : (
+        <div className="success">
+          <h2>Payment Successful 🎉</h2>
+          <p>Your Order Code</p>
+          <h1>{code}</h1>
+        </div>
+      )}
     </div>
   );
 }
-
-const styles = {
-  page: {
-    minHeight: "100vh",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    background: "#f4f7fb",
-  },
-  card: {
-    background: "white",
-    padding: "30px",
-    borderRadius: "10px",
-    width: "350px",
-    textAlign: "center",
-  },
-  title: {
-    marginBottom: "20px",
-  },
-};
 
 export default App;
