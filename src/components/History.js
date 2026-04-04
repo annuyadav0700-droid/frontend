@@ -3,29 +3,32 @@ import jsPDF from "jspdf";
 
 function History({ orders, setPage }) {
   const [selectedOrder, setSelectedOrder] = useState(null);
+
   const downloadReceipt = (order) => {
-  const doc = new jsPDF();
+    const doc = new jsPDF();
 
-  doc.setFontSize(18);
-  doc.text("A4Station Receipt", 20, 20);
+    doc.setFontSize(18);
+    doc.text("A4Station Receipt", 20, 20);
 
-  doc.setFontSize(12);
-  doc.text(`Order Code: ${order.code}`, 20, 40);
-  doc.text(`Amount: ₹${order.amount}`, 20, 50);
-  doc.text(`Pages: ${order.pages}`, 20, 60);
-  doc.text(`Copies: ${order.copies}`, 20, 70);
-  doc.text(`Print Type: ${order.printType}`, 20, 80);
-  doc.text(`Print Side: ${order.printSide}`, 20, 90);
-  doc.text(`Date: ${order.date}`, 20, 100);
+    doc.setFontSize(12);
+    doc.text(`Order Code: ${order.code}`, 20, 40);
+    doc.text(`Amount: ₹${order.amount}`, 20, 50);
+    doc.text(`Pages: ${order.pages}`, 20, 60);
+    doc.text(`Copies: ${order.copies}`, 20, 70);
+    doc.text(`Print Type: ${order.printType}`, 20, 80);
+    doc.text(`Print Side: ${order.printSide}`, 20, 90);
+    doc.text(`Date: ${order.date}`, 20, 100);
+    doc.text(`Kiosk: ${order.kioskName}`, 20, 110);
 
-  doc.text("Thank you for using A4Station 🚀", 20, 120);
+    doc.text("Thank you for using A4Station 🚀", 20, 130);
 
-  doc.save(`receipt_${order.code}.pdf`);
-};
+    doc.save(`receipt_${order.code}.pdf`);
+  };
+
   return (
-    <div className="history-page">
+    <div style={{ padding: "20px", paddingBottom: "80px" }}>
       {/* 🔙 Back */}
-      <button onClick={() => setPage("dashboard")}>⬅ Back</button>
+      <button onClick={() => setPage("home")}>⬅ Back</button>
 
       <h2>My Orders</h2>
 
@@ -33,30 +36,63 @@ function History({ orders, setPage }) {
       {orders.length === 0 ? (
         <p>No orders yet</p>
       ) : (
-        <div className="order-list">
+        <div>
           {orders.map((order, index) => (
-            <div key={index} className="order-card">
+            <div
+              key={index}
+              style={{
+                padding: "15px",
+                marginBottom: "10px",
+                borderRadius: "12px",
+                background: "#f5f5f5",
+              }}
+            >
               <h3>🧾 Order #{order.code}</h3>
               <p>₹ {order.amount}</p>
               <p>{order.date}</p>
+              <p>Kiosk: {order.kioskName || "Not selected"}</p>
 
-              {/* ✅ YAHI ANDAR hona chahiye */}
               <button onClick={() => setSelectedOrder(order)}>
                 View Receipt
               </button>
+
               <button onClick={() => downloadReceipt(order)}>
-              📄 Download Receipt
-               </button>
-              
+                📄 Download
+              </button>
             </div>
           ))}
         </div>
       )}
 
-      {/* 📄 RECEIPT POPUP */}
+      {/* 🔥 POPUP */}
       {selectedOrder && (
-        <div className="receipt-popup">
-          <div className="receipt-card">
+        <div
+          onClick={() => setSelectedOrder(null)}
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            background: "rgba(0,0,0,0.5)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 1000,
+          }}
+        >
+          {/* 🧾 RECEIPT CARD */}
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "#fff",
+              padding: "20px",
+              borderRadius: "12px",
+              width: "90%",
+              maxWidth: "400px",
+              boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
+            }}
+          >
             <h2>🧾 Receipt</h2>
 
             <p><strong>Order Code:</strong> {selectedOrder.code}</p>
@@ -66,11 +102,22 @@ function History({ orders, setPage }) {
             <p><strong>Type:</strong> {selectedOrder.printType}</p>
             <p><strong>Side:</strong> {selectedOrder.printSide}</p>
             <p><strong>Date:</strong> {selectedOrder.date}</p>
+            <p><strong>Kiosk:</strong> {selectedOrder.kioskName}</p>
 
-            <button onClick={() => setSelectedOrder(null)}>
+            <button
+              onClick={() => setSelectedOrder(null)}
+              style={{
+                marginTop: "10px",
+                padding: "8px 15px",
+                borderRadius: "8px",
+                border: "none",
+                background: "#000",
+                color: "#fff",
+                cursor: "pointer",
+              }}
+            >
               Close
             </button>
-            
           </div>
         </div>
       )}

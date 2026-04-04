@@ -1,45 +1,136 @@
 import React from "react";
 
 function Dashboard({ user, setPage }) {
+  const userName =
+    user?.displayName ||
+    user?.email?.split("@")[0] ||
+    user?.phoneNumber ||
+    "User";
+
   return (
-    <div className="dashboard">
+    <div style={{ padding: "20px", paddingBottom: "90px" }}>
+      
+      {/* 👋 HEADER */}
+      <div>
+        <h2>Hi, {userName} 👋</h2>
+        <p style={{ color: "#666" }}>
+          Print your documents in seconds
+        </p>
+      </div>
 
-      {/* 🔝 TOP BAR */}
-      <div className="topbar">
-        <h2 className="logo">A4Station</h2>
+      {/* 🔥 HERO CARD */}
+      <div
+        style={{
+          marginTop: "20px",
+          padding: "20px",
+          borderRadius: "16px",
+          background: "linear-gradient(135deg, #000, #333)",
+          color: "#fff",
+        }}
+      >
+        <h3>⚡ Upload & Print Instantly</h3>
+        <p style={{ fontSize: "14px", opacity: 0.8 }}>
+          Select kiosk → Upload → Pay → Print
+        </p>
 
-        <button className="profile-btn" onClick={() => setPage("profile")}>
-          👤
+        <button
+          onClick={() => setPage("upload")}
+          style={{
+            marginTop: "15px",
+            padding: "10px 15px",
+            borderRadius: "8px",
+            border: "none",
+            background: "#fff",
+            color: "#000",
+            cursor: "pointer",
+            fontWeight: "600",
+          }}
+        >
+          Start Printing 🚀
         </button>
       </div>
 
-      {/* 👋 WELCOME */}
-      <div className="welcome">
-        <h1>Welcome 🚀</h1>
-        <p>{user.email || user.phoneNumber}</p>
+      {/* 📄 RECENT ORDERS */}
+      <div style={{ marginTop: "30px" }}>
+        <h3>Recent Orders</h3>
+
+        <div
+          style={{
+            marginTop: "10px",
+            padding: "15px",
+            borderRadius: "12px",
+            background: "#f5f5f5",
+            fontSize: "14px",
+            color: "#555",
+          }}
+        >
+          You can view all your orders in the Orders tab 📄
+        </div>
       </div>
 
-      {/* 📦 CARDS */}
-      <div className="card-container">
+      {/* 📍 QUICK ACTIONS */}
+      <div style={{ marginTop: "30px" }}>
+        <h3>Quick Actions</h3>
 
-        {/* 🖨️ PRINT */}
-        <div className="card" onClick={() => setPage("print")}>
-          <h3>🖨️ Print Document</h3>
-          <p>Upload & print instantly</p>
+        <div
+          style={{
+            display: "flex",
+            gap: "10px",
+            marginTop: "10px",
+          }}
+        >
+          <div
+            onClick={() => setPage("upload")}
+            style={{
+              flex: 1,
+              padding: "15px",
+              background: "#eee",
+              borderRadius: "12px",
+              textAlign: "center",
+              cursor: "pointer",
+            }}
+          >
+            🖨️ Print
+          </div>
+
+          <div
+            onClick={() => setPage("orders")}
+            style={{
+              flex: 1,
+              padding: "15px",
+              background: "#eee",
+              borderRadius: "12px",
+              textAlign: "center",
+              cursor: "pointer",
+            }}
+          >
+            📄 Orders
+          </div>
         </div>
+      </div>
 
-        {/* 📄 HISTORY */}
-        <div className="card" onClick={() => setPage("history")}>
-          <h3>📄 My Orders</h3>
-          <p>View receipts & history</p>
-        </div>
+      {/* 💬 HELP / SUPPORT */}
+      <div style={{ marginTop: "40px", textAlign: "center" }}>
+        <p style={{ color: "#888", fontSize: "14px" }}>
+          Need help?
+        </p>
 
-        {/* 💰 FUTURE (optional) */}
-        <div className="card disabled">
-          <h3>💰 Wallet</h3>
-          <p>Coming soon</p>
-        </div>
-
+        <button
+          onClick={() =>
+            window.open("https://wa.me/919999999999", "_blank") // 👉 अपना नंबर डालना
+          }
+          style={{
+            padding: "10px 20px",
+            borderRadius: "20px",
+            border: "none",
+            background: "#25D366",
+            color: "#fff",
+            cursor: "pointer",
+            fontWeight: "600",
+          }}
+        >
+          💬 Chat on WhatsApp
+        </button>
       </div>
     </div>
   );

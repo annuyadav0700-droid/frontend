@@ -4,7 +4,7 @@ import * as pdfjsLib from "pdfjs-dist";
 
 import { db, auth } from "../firebase"; // ✅ FIXED
 import { collection, addDoc } from "firebase/firestore";
-
+const selectedKiosk = JSON.parse(localStorage.getItem("selectedKiosk"));
 pdfjsLib.GlobalWorkerOptions.workerSrc =
   "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 
@@ -12,7 +12,7 @@ function PrintPage({ setPage, setOrders }) {
   const [files, setFiles] = useState([]);
   const [previews, setPreviews] = useState([]); // 🔥 NEW
   const [pages, setPages] = useState(0);
-
+  
   const [copies, setCopies] = useState(1);
   const [printSide, setPrintSide] = useState("single");
   const [printType, setPrintType] = useState("bw");
@@ -89,10 +89,16 @@ function PrintPage({ setPage, setOrders }) {
   };
 
   // 💳 PAYMENT
+  const selectedKiosk = JSON.parse(localStorage.getItem("selectedKiosk"));
+
+if (!selectedKiosk) {
+  alert("Please select a kiosk first");
+  return;
+}
   const handlePayment = async () => {
     try {
       if (files.length === 0) {
-        alert("Select file first");
+        alert("Please select a kiosk first");
         return;
       }
 
@@ -140,10 +146,17 @@ function PrintPage({ setPage, setOrders }) {
             };
 
             await addDoc(collection(db, "orders"), {
-              ...newOrder,
-              userId: auth.currentUser.uid,
-            });
+           ...newOrder,
+             userId: auth.currentUser.uid,
 
+           // 🔥 NEW (IMPORTANT)
+            kioskId: selectedKiosk.id,
+            kioskName: selectedKiosk.name,
+
+            status: "pending",
+             });
+
+            
             setCode(verify.data.code);
             setPaid(true);
           } else {

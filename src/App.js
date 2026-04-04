@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from "react";
 
 // 🔐 Firebase
-import { auth } from "./firebase";
+import { auth, db } from "./firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
+
+// 🔥 Firestore
+import { collection, getDocs, doc, getDoc } from "firebase/firestore";
 
 // 📦 Components
 import Login from "./components/Login";
@@ -10,19 +13,27 @@ import Dashboard from "./components/Dashboard";
 import PrintPage from "./components/PrintPage";
 import History from "./components/History";
 import Profile from "./components/Profile";
+import KioskPage from "./components/KioskPage";
+import KioskScreen from "./components/KioskScreen";
+import BottomNav from "./components/BottomNav";
+import CompleteProfile from "./components/CompleteProfile";
 
 function App() {
   // 🔐 AUTH STATE
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // 📄 APP NAVIGATION
-  const [page, setPage] = useState("dashboard");
+  // 📄 NAVIGATION
+  const [page, setPage] = useState("home");
 
-  // 📊 ORDERS (temporary state)
+  // 📊 ORDERS
   const [orders, setOrders] = useState([]);
 
-  // 🔐 CHECK LOGIN
+  // 👤 PROFILE CHECK
+  const [profileDone, setProfileDone] = useState(false);
+  const [checkingProfile, setCheckingProfile] = useState(true);
+
+  // 🔐 AUTH LISTENER
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
@@ -32,13 +43,59 @@ function App() {
     return () => unsubscribe();
   }, []);
 
+  // 👤 CHECK PROFILE (VERY IMPORTANT)
+  useEffect(() => {
+    const checkProfile = async () => {
+      if (!user) return;
+
+      try {
+        const docRef = doc(db, "users", user.uid);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          setProfileDone(true);
+        } else {
+          setProfileDone(false);
+        }
+      } catch (error) {
+        console.error("Profile check error:", error);
+      }
+
+      setCheckingProfile(false);
+    };
+
+    checkProfile();
+  }, [user]);
+
+  // 📥 FETCH ORDERS
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const snapshot = await getDocs(collection(db, "orders"));
+
+        const data = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        setOrders(data);
+      } catch (error) {
+        console.error("Error fetching orders:", error);
+      }
+    };
+
+    if (user && profileDone) {
+      fetchOrders();
+    }
+  }, [user, profileDone]);
+
   // 🚪 LOGOUT
   const handleLogout = () => {
     signOut(auth);
   };
 
   // ⏳ LOADING
-  if (loading) {
+  if (loading || checkingProfile) {
     return <h2>Loading...</h2>;
   }
 
@@ -47,44 +104,48 @@ function App() {
     return <Login />;
   }
 
-  // 🏠 DASHBOARD
-  if (page === "dashboard") {
-    return <Dashboard user={user} setPage={setPage} />;
+  // 🔥 NEW USER → COMPLETE PROFILE
+  if (!profileDone) {
+    return <CompleteProfile setProfileDone={setProfileDone} />;
   }
 
-  // 🖨️ PRINT PAGE
-  if (page === "print") {
-    return (
-      <PrintPage
-        setPage={setPage}
-        setOrders={setOrders}
-      />
-    );
-  }
+  // 🎯 MAIN APP UI
+  return (
+    <>
+      {/* 🏠 HOME */}
+      {page === "home" && (
+        <Dashboard user={user} setPage={setPage} />
+      )}
 
-  // 📄 HISTORY
-  if (page === "history") {
-    return (
-      <History
-        orders={orders}
-        setPage={setPage}
-      />
-    );
-  }
+      {/* 📤 UPLOAD → KIOSK */}
+      {page === "upload" && (
+        <KioskPage setPage={setPage} />
+      )}
 
-  // 👤 PROFILE
-  if (page === "profile") {
-    return (
-      <Profile
-        user={user}
-        logout={handleLogout}
-        setPage={setPage}
-      />
-    );
-  }
+      {/* 🖨️ PRINT */}
+      {page === "print" && (
+        <PrintPage setPage={setPage} setOrders={setOrders} />
+      )}
 
-  // 🔁 FALLBACK
-  return <Dashboard user={user} setPage={setPage} />;
+      {/* 📄 ORDERS */}
+      {page === "orders" && (
+        <History orders={orders} setPage={setPage} />
+      )}
+
+      {/* 👤 PROFILE */}
+      {page === "profile" && (
+        <Profile user={user} logout={handleLogout} setPage={setPage} />
+      )}
+
+      {/* 🖥️ KIOSK SCREEN */}
+      {page === "kioskScreen" && (
+        <KioskScreen setPage={setPage} />
+      )}
+
+      {/* 🔥 BOTTOM NAV */}
+      <BottomNav page={page} setPage={setPage} />
+    </>
+  );
 }
 
 export default App;
