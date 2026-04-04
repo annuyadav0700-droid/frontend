@@ -45,27 +45,42 @@ function App() {
 
   // 👤 CHECK PROFILE (VERY IMPORTANT)
   useEffect(() => {
-    const checkProfile = async () => {
-      if (!user) return;
+  const checkProfile = async () => {
+    if (!user) {
+      setCheckingProfile(false);
+      return;
+    }
 
-      try {
-        const docRef = doc(db, "users", user.uid);
-        const docSnap = await getDoc(docRef);
+    try {
+      const docRef = doc(db, "users", user.uid);
 
-        if (docSnap.exists()) {
-          setProfileDone(true);
-        } else {
-          setProfileDone(false);
-        }
-      } catch (error) {
-        console.error("Profile check error:", error);
+      // 🔥 timeout protection
+      const timeout = new Promise((_, reject) =>
+        setTimeout(() => reject("timeout"), 5000)
+      );
+
+      const docSnap = await Promise.race([
+        getDoc(docRef),
+        timeout,
+      ]);
+
+      if (docSnap && docSnap.exists && docSnap.exists()) {
+        setProfileDone(true);
+      } else {
+        setProfileDone(false);
       }
 
-      setCheckingProfile(false);
-    };
+    } catch (error) {
+      console.error("Profile error:", error);
+      setProfileDone(false);
+    }
 
-    checkProfile();
-  }, [user]);
+    // 🔥 NEVER STUCK AGAIN
+    setCheckingProfile(false);
+  };
+
+  checkProfile();
+}, [user]);
 
   // 📥 FETCH ORDERS
   useEffect(() => {
