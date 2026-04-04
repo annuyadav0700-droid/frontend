@@ -1,219 +1,90 @@
-import React, { useState } from "react";
-import axios from "axios";
-import * as pdfjsLib from "pdfjs-dist";
+import React, { useState, useEffect } from "react";
 
-pdfjsLib.GlobalWorkerOptions.workerSrc =
-  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+// 🔐 Firebase
+import { auth } from "./firebase";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+
+// 📦 Components
+import Login from "./components/Login";
+import Dashboard from "./components/Dashboard";
+import PrintPage from "./components/PrintPage";
+import History from "./components/History";
+import Profile from "./components/Profile";
 
 function App() {
-  const [files, setFiles] = useState([]);
-  const [pages, setPages] = useState(0);
-  const [copies, setCopies] = useState(1);
-  const [printSide, setPrintSide] = useState("single"); // ✅ FIXED
-  const [printType, setPrintType] = useState("bw");
-  const [paid, setPaid] = useState(false);
-  const [code, setCode] = useState("");
+  // 🔐 AUTH STATE
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const bwPrice = 5;
-  const colorPrice = 10;
+  // 📄 APP NAVIGATION
+  const [page, setPage] = useState("dashboard");
 
-  const pricePerPage = printType === "color" ? colorPrice : bwPrice;
+  // 📊 ORDERS (temporary state)
+  const [orders, setOrders] = useState([]);
 
-  // ✅ double side logic
-  const effectivePages =
-    printSide === "double" ? Math.ceil(pages / 2) : pages;
+  // 🔐 CHECK LOGIN
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setLoading(false);
+    });
 
-  const totalAmount = effectivePages * copies * pricePerPage;
+    return () => unsubscribe();
+  }, []);
 
-  // FILE SELECT + PAGE COUNT
-  const handleFileChange = async (e) => {
-    const selectedFiles = Array.from(e.target.files);
-    setFiles(selectedFiles);
-
-    let totalPages = 0;
-
-    for (let file of selectedFiles) {
-      if (file.type === "application/pdf") {
-        const buffer = await file.arrayBuffer();
-        const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
-        totalPages += pdf.numPages;
-      } else {
-        totalPages += 1;
-      }
-    }
-
-    setPages(totalPages);
+  // 🚪 LOGOUT
+  const handleLogout = () => {
+    signOut(auth);
   };
 
-  // UPLOAD FILE
-  const uploadFiles = async () => {
-    const formData = new FormData();
-    files.forEach((file) => formData.append("files", file));
+  // ⏳ LOADING
+  if (loading) {
+    return <h2>Loading...</h2>;
+  }
 
-    const res = await axios.post(
-      "https://a4stationbackend.onrender.com/upload",
-      formData
+  // 🔒 NOT LOGGED IN
+  if (!user) {
+    return <Login />;
+  }
+
+  // 🏠 DASHBOARD
+  if (page === "dashboard") {
+    return <Dashboard user={user} setPage={setPage} />;
+  }
+
+  // 🖨️ PRINT PAGE
+  if (page === "print") {
+    return (
+      <PrintPage
+        setPage={setPage}
+        setOrders={setOrders}
+      />
     );
+  }
 
-    if (!res.data.success) {
-      alert("Upload failed");
-      return null;
-    }
+  // 📄 HISTORY
+  if (page === "history") {
+    return (
+      <History
+        orders={orders}
+        setPage={setPage}
+      />
+    );
+  }
 
-    return res.data.filename;
-  };
+  // 👤 PROFILE
+  if (page === "profile") {
+    return (
+      <Profile
+        user={user}
+        logout={handleLogout}
+        setPage={setPage}
+      />
+    );
+  }
 
-  // PAYMENT
-  const handlePayment = async () => {
-    try {
-      if (files.length === 0) {
-        alert("Select file first");
-        return;
-      }
-
-      const uploadedFileName = await uploadFiles();
-      if (!uploadedFileName) return;
-
-      const { data: order } = await axios.post(
-        "https://a4stationbackend.onrender.com/create-order",
-        {
-          pages: effectivePages,
-          copies,
-          printType,
-          printSide,
-        }
-      );
-
-      const options = {
-        key: "rzp_test_SEWq0s9qENRJ4Z",
-        amount: order.amount,
-        currency: "INR",
-        name: "A4Station",
-        description: "Printing Payment",
-        order_id: order.id,
-
-        handler: async function (response) {
-          const verify = await axios.post(
-            "https://a4stationbackend.onrender.com/verify-payment",
-            {
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-              fileName: uploadedFileName,
-            }
-          );
-
-          if (verify.data.success) {
-            setCode(verify.data.code);
-            setPaid(true);
-          } else {
-            alert("Payment verification failed");
-          }
-        },
-
-        theme: { color: "#000000" },
-      };
-
-      const rzp = new window.Razorpay(options);
-      rzp.open();
-    } catch (err) {
-      console.error("Payment error:", err);
-      alert("Something went wrong");
-    }
-  };
-
-  return (
-    <div className="app">
-      {!paid ? (
-        <div className="card">
-          <h1 className="brand">A4Station</h1>
-
-          {/* Upload */}
-          <label className="upload-box">
-            <input
-              type="file"
-              multiple
-              accept=".pdf,image/*"
-              onChange={handleFileChange}
-              hidden
-            />
-            <div className="plus">+</div>
-            <p>Upload Documents</p>
-          </label>
-
-          {/* Info */}
-          <div className="info">
-            <p>Files: {files.length}</p>
-            <p>Total Pages: {pages}</p>
-          </div>
-
-          {/* Copies */}
-          <div className="section">
-            <label>Copies</label>
-            <div className="counter">
-              <button
-                onClick={() => copies > 1 && setCopies(copies - 1)}
-              >
-                -
-              </button>
-              <span>{copies}</span>
-              <button onClick={() => setCopies(copies + 1)}>+</button>
-            </div>
-          </div>
-
-          {/* Print Type */}
-          <div className="section">
-            <label>Print Type</label>
-            <div className="toggle">
-              <button
-                className={printType === "bw" ? "active" : ""}
-                onClick={() => setPrintType("bw")}
-              >
-                B/W
-              </button>
-              <button
-                className={printType === "color" ? "active" : ""}
-                onClick={() => setPrintType("color")}
-              >
-                Color
-              </button>
-            </div>
-          </div>
-
-          {/* Print Side */}
-          <div className="section">
-            <label>Print Side</label>
-            <div className="toggle">
-              <button
-                className={printSide === "single" ? "active" : ""}
-                onClick={() => setPrintSide("single")}
-              >
-                Single
-              </button>
-              <button
-                className={printSide === "double" ? "active" : ""}
-                onClick={() => setPrintSide("double")}
-              >
-                Double
-              </button>
-            </div>
-          </div>
-
-          <h2 className="total">₹ {totalAmount}</h2>
-
-          <button className="pay-btn" onClick={handlePayment}>
-            Pay Now
-          </button>
-        </div>
-      ) : (
-        <div className="success">
-          <h2>Payment Successful 🎉</h2>
-          <p>Your Order Code</p>
-          <h1>{code}</h1>
-        </div>
-      )}
-    </div>
-  );
+  // 🔁 FALLBACK
+  return <Dashboard user={user} setPage={setPage} />;
 }
 
 export default App;
