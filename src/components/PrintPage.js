@@ -1,18 +1,19 @@
 import React, { useState } from "react";
 import axios from "axios";
 import * as pdfjsLib from "pdfjs-dist";
+import colors from "../theme/colors";
 
-import { db, auth } from "../firebase"; // ✅ FIXED
+import { db, auth } from "../firebase";
 import { collection, addDoc } from "firebase/firestore";
-const selectedKiosk = JSON.parse(localStorage.getItem("selectedKiosk"));
+
 pdfjsLib.GlobalWorkerOptions.workerSrc =
   "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 
-function PrintPage({ setPage, setOrders }) {
+function PrintPage({ setPage }) {
   const [files, setFiles] = useState([]);
-  const [previews, setPreviews] = useState([]); // 🔥 NEW
+  const [previews, setPreviews] = useState([]);
   const [pages, setPages] = useState(0);
-  
+
   const [copies, setCopies] = useState(1);
   const [printSide, setPrintSide] = useState("single");
   const [printType, setPrintType] = useState("bw");
@@ -24,13 +25,12 @@ function PrintPage({ setPage, setOrders }) {
   const colorPrice = 10;
 
   const pricePerPage = printType === "color" ? colorPrice : bwPrice;
-
   const effectivePages =
     printSide === "double" ? Math.ceil(pages / 2) : pages;
 
   const totalAmount = effectivePages * copies * pricePerPage;
 
-  // 📂 FILE SELECT + PREVIEW
+  // 📂 FILE SELECT
   const handleFileChange = async (e) => {
     const selectedFiles = Array.from(e.target.files);
     setFiles(selectedFiles);
@@ -45,7 +45,6 @@ function PrintPage({ setPage, setOrders }) {
 
         totalPages += pdf.numPages;
 
-        // 🔥 PDF PREVIEW (first page)
         const page = await pdf.getPage(1);
         const viewport = page.getViewport({ scale: 1 });
 
@@ -60,8 +59,6 @@ function PrintPage({ setPage, setOrders }) {
         previewArr.push(canvas.toDataURL());
       } else {
         totalPages += 1;
-
-        // 🖼️ IMAGE PREVIEW
         previewArr.push(URL.createObjectURL(file));
       }
     }
@@ -70,40 +67,30 @@ function PrintPage({ setPage, setOrders }) {
     setPreviews(previewArr);
   };
 
-  // 📤 UPLOAD
-  const uploadFiles = async () => {
-    const formData = new FormData();
-    files.forEach((file) => formData.append("files", file));
+  // 💳 PAYMENT
+  const handlePayment = async () => {
+    const selectedKiosk = JSON.parse(localStorage.getItem("selectedKiosk"));
 
-    const res = await axios.post(
-      "https://a4stationbackend.onrender.com/upload",
-      formData
-    );
-
-    if (!res.data.success) {
-      alert("Upload failed");
-      return null;
+    if (!selectedKiosk) {
+      alert("Please select a kiosk first");
+      return;
     }
 
-    return res.data.filename;
-  };
+    if (files.length === 0) {
+      alert("Upload file first");
+      return;
+    }
 
-  // 💳 PAYMENT
-  const selectedKiosk = JSON.parse(localStorage.getItem("selectedKiosk"));
-
-if (!selectedKiosk) {
-  alert("Please select a kiosk first");
-  return;
-}
-  const handlePayment = async () => {
     try {
-      if (files.length === 0) {
-        alert("Please select a kiosk first");
-        return;
-      }
+      const formData = new FormData();
+      files.forEach((file) => formData.append("files", file));
 
-      const uploadedFileName = await uploadFiles();
-      if (!uploadedFileName) return;
+      const res = await axios.post(
+        "https://a4stationbackend.onrender.com/upload",
+        formData
+      );
+
+      const uploadedFileName = res.data.filename;
 
       const { data: order } = await axios.post(
         "https://a4stationbackend.onrender.com/create-order",
@@ -120,22 +107,19 @@ if (!selectedKiosk) {
         amount: order.amount,
         currency: "INR",
         name: "A4Station",
-        description: "Printing Payment",
         order_id: order.id,
 
         handler: async function (response) {
           const verify = await axios.post(
             "https://a4stationbackend.onrender.com/verify-payment",
             {
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
+              ...response,
               fileName: uploadedFileName,
             }
           );
 
           if (verify.data.success) {
-            const newOrder = {
+            await addDoc(collection(db, "orders"), {
               code: verify.data.code,
               amount: totalAmount,
               pages: effectivePages,
@@ -143,110 +127,86 @@ if (!selectedKiosk) {
               printType,
               printSide,
               date: new Date().toLocaleString(),
-            };
+              userId: auth.currentUser.uid,
+              kioskId: selectedKiosk.id,
+              kioskName: selectedKiosk.name,
+              status: "pending",
+            });
 
-            await addDoc(collection(db, "orders"), {
-           ...newOrder,
-             userId: auth.currentUser.uid,
-
-           // 🔥 NEW (IMPORTANT)
-            kioskId: selectedKiosk.id,
-            kioskName: selectedKiosk.name,
-
-            status: "pending",
-             });
-
-            
             setCode(verify.data.code);
             setPaid(true);
-          } else {
-            alert("Payment verification failed");
           }
         },
 
-        theme: { color: "#000000" },
+        theme: { color: colors.primary },
       };
 
       const rzp = new window.Razorpay(options);
       rzp.open();
     } catch (err) {
       console.error(err);
-      alert("Payment error");
+      alert("Payment failed");
     }
   };
 
   return (
-    <div className="print-page">
-      <button onClick={() => setPage("dashboard")}>⬅ Back</button>
+    <div style={{ padding: "20px", paddingBottom: "90px" }}>
+      
+      <button onClick={() => setPage("home")}>⬅ Back</button>
 
       {!paid ? (
-        <div className="card">
+        <div
+          style={{
+            marginTop: "15px",
+            padding: "20px",
+            borderRadius: "16px",
+            background: colors.white,
+            boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
+          }}
+        >
           <h2>Print Document</h2>
 
-          {/* Upload */}
           <input
             type="file"
             multiple
-            accept=".pdf,image/*"
             onChange={handleFileChange}
           />
 
-          <p>Files: {files.length}</p>
-          <p>Total Pages: {pages}</p>
+          <p>Pages: {pages}</p>
 
-          {/* 🔥 PREVIEW */}
+          {/* PREVIEW */}
           <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
             {previews.map((src, i) => (
-              <img
-                key={i}
-                src={src}
-                alt="preview"
-                style={{ width: "100px", borderRadius: "8px" }}
-              />
+              <img key={i} src={src} style={{ width: "80px", borderRadius: "8px" }} />
             ))}
-          </div>
-
-          {/* Copies */}
-          <div>
-            <label>Copies:</label>
-            <button onClick={() => copies > 1 && setCopies(copies - 1)}>
-              -
-            </button>
-            <span>{copies}</span>
-            <button onClick={() => setCopies(copies + 1)}>+</button>
-          </div>
-
-          {/* Type */}
-          <div>
-            <label>Print Type:</label>
-            <button onClick={() => setPrintType("bw")}>B/W</button>
-            <button onClick={() => setPrintType("color")}>Color</button>
-          </div>
-
-          {/* Side */}
-          <div>
-            <label>Print Side:</label>
-            <button onClick={() => setPrintSide("single")}>Single</button>
-            <button onClick={() => setPrintSide("double")}>Double</button>
           </div>
 
           <h3>Total: ₹ {totalAmount}</h3>
 
-          <button onClick={handlePayment}>Pay Now</button>
-        </div>
-      ) : (
-        <div className="success">
-          <h2>Payment Successful 🎉</h2>
-          <p>Your Code:</p>
-          <h1>{code}</h1>
-
           <button
-            onClick={() => {
-              setPaid(false);
-              setPage("dashboard");
+            onClick={handlePayment}
+            style={{
+              marginTop: "15px",
+              width: "100%",
+              padding: "12px",
+              borderRadius: "12px",
+              border: "none",
+              background: colors.primary,
+              color: colors.white,
+              fontWeight: "600",
             }}
           >
-            Go to Dashboard
+            Pay & Print
+          </button>
+        </div>
+      ) : (
+        <div style={{ textAlign: "center", marginTop: "50px" }}>
+          <h2>🎉 Payment Successful</h2>
+          <p>Your Code:</p>
+          <h1 style={{ color: colors.primary }}>{code}</h1>
+
+          <button onClick={() => setPage("home")}>
+            Go Home
           </button>
         </div>
       )}

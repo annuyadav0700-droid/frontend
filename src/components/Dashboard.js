@@ -9,13 +9,12 @@ function Dashboard({ user, setPage }) {
     "User";
 
   return (
-  
     <div style={{ padding: "20px", paddingBottom: "90px" }}>
       
       {/* 👋 HEADER */}
       <div>
-        <h2>Hi, {userName} 👋</h2>
-        <p style={{ color: "#666" }}>
+        <h2 style={{ color: colors.dark }}>Hi, {userName} 👋</h2>
+        <p style={{ color: colors.gray }}>
           Print your documents in seconds
         </p>
       </div>
@@ -28,24 +27,27 @@ function Dashboard({ user, setPage }) {
           borderRadius: "16px",
           background: colors.primary,
           color: colors.white,
+          boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
         }}
       >
         <h3>⚡ Upload & Print Instantly</h3>
-        <p style={{ fontSize: "14px", opacity: 0.8 }}>
-          Select kiosk → Upload → Pay → Print
+
+        <p style={{ fontSize: "14px", opacity: 0.9 }}>
+          1. Select kiosk → 2. Upload → 3. Pay → 4. Print
         </p>
 
         <button
           onClick={() => setPage("upload")}
           style={{
             marginTop: "15px",
-            padding: "10px 15px",
-            borderRadius: "8px",
+            padding: "10px 16px",
+            borderRadius: "10px",
             border: "none",
             background: colors.white,
             color: colors.primary,
             cursor: "pointer",
             fontWeight: "600",
+            transition: "0.2s",
           }}
         >
           Start Printing 🚀
@@ -53,17 +55,18 @@ function Dashboard({ user, setPage }) {
       </div>
 
       {/* 📄 RECENT ORDERS */}
-      <div style={{ marginTop: "30px" }}>
-        <h3>Recent Orders</h3>
+      <div style={{ marginTop: "32px" }}>
+        <h3 style={{ color: colors.dark }}>Recent Orders</h3>
 
         <div
           style={{
-            marginTop: "10px",
+            marginTop: "12px",
             padding: "15px",
             borderRadius: "12px",
             background: colors.white,
             fontSize: "14px",
-            color: "#555",
+            color: colors.gray,
+            border: "1px solid #EAF2FF",
           }}
         >
           You can view all your orders in the Orders tab 📄
@@ -71,39 +74,45 @@ function Dashboard({ user, setPage }) {
       </div>
 
       {/* 📍 QUICK ACTIONS */}
-      <div style={{ marginTop: "30px" }}>
-        <h3>Quick Actions</h3>
+      <div style={{ marginTop: "32px" }}>
+        <h3 style={{ color: colors.dark }}>Quick Actions</h3>
 
         <div
           style={{
             display: "flex",
-            gap: "10px",
-            marginTop: "10px",
+            gap: "12px",
+            marginTop: "12px",
           }}
         >
+          {/* PRINT */}
           <div
             onClick={() => setPage("upload")}
             style={{
               flex: 1,
-              padding: "15px",
+              padding: "16px",
               background: colors.white,
               borderRadius: "12px",
               textAlign: "center",
               cursor: "pointer",
+              border: "1px solid #EAF2FF",
+              fontWeight: "500",
             }}
           >
             🖨️ Print
           </div>
 
+          {/* ORDERS */}
           <div
             onClick={() => setPage("orders")}
             style={{
               flex: 1,
-              padding: "15px",
+              padding: "16px",
               background: colors.white,
               borderRadius: "12px",
               textAlign: "center",
               cursor: "pointer",
+              border: "1px solid #EAF2FF",
+              fontWeight: "500",
             }}
           >
             📄 Orders
@@ -113,13 +122,13 @@ function Dashboard({ user, setPage }) {
 
       {/* 💬 HELP / SUPPORT */}
       <div style={{ marginTop: "40px", textAlign: "center" }}>
-        <p style={{ color: "#888", fontSize: "14px" }}>
+        <p style={{ color: colors.gray, fontSize: "14px" }}>
           Need help?
         </p>
 
         <button
           onClick={() =>
-            window.open("https://wa.me/917206726848", "_blank") // 👉 अपना नंबर डालना
+            window.open("https://wa.me/917206726848", "_blank")
           }
           style={{
             padding: "10px 20px",

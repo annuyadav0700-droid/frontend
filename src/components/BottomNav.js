@@ -1,4 +1,5 @@
 import React from "react";
+import colors from "../theme/colors";
 
 function BottomNav({ page, setPage }) {
   const tabs = [
@@ -18,10 +19,11 @@ function BottomNav({ page, setPage }) {
         display: "flex",
         justifyContent: "space-around",
         alignItems: "center",
-        background: "#ffffff",
-        borderTop: "1px solid #ddd",
-        padding: "8px 0",
+        background: colors.white,
+        borderTop: "1px solid #EAF2FF",
+        padding: "10px 0",
         zIndex: 1000,
+        boxShadow: "0 -5px 20px rgba(0,0,0,0.05)",
       }}
     >
       {tabs.map((tab) => {
@@ -36,12 +38,23 @@ function BottomNav({ page, setPage }) {
               flexDirection: "column",
               alignItems: "center",
               cursor: "pointer",
-              color: isActive ? "#000" : "#888",
+              color: isActive ? colors.primary : colors.gray,
               fontWeight: isActive ? "600" : "400",
               fontSize: "12px",
+              transition: "0.2s",
             }}
           >
-            <span style={{ fontSize: "20px" }}>{tab.icon}</span>
+            {/* ICON */}
+            <span
+              style={{
+                fontSize: "20px",
+                marginBottom: "2px",
+              }}
+            >
+              {tab.icon}
+            </span>
+
+            {/* LABEL */}
             {tab.label}
           </div>
         );

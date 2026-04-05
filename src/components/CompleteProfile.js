@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { db, auth } from "../firebase";
 import { doc, setDoc } from "firebase/firestore";
+import colors from "../theme/colors";
 
 function CompleteProfile({ setProfileDone }) {
   const [name, setName] = useState("");
@@ -8,7 +9,6 @@ function CompleteProfile({ setProfileDone }) {
   const [loading, setLoading] = useState(false);
 
   const handleSave = async () => {
-    // 🔥 VALIDATION
     if (!name.trim() || !phone.trim()) {
       alert("Please fill all details");
       return;
@@ -40,56 +40,59 @@ function CompleteProfile({ setProfileDone }) {
   return (
     <div
       style={{
-        height: "100vh",
+        minHeight: "100vh",
+        background: "#F8FAFC",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        background: "#f5f5f5",
         padding: "20px",
       }}
     >
       <div
         style={{
-          background: "#fff",
-          padding: "25px",
-          borderRadius: "16px",
           width: "100%",
           maxWidth: "400px",
-          boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
+          background: colors.white,
+          borderRadius: "20px",
+          padding: "30px",
+          boxShadow: "0 15px 40px rgba(0,0,0,0.1)",
         }}
       >
-        <h2 style={{ marginBottom: "10px" }}>Complete Your Profile</h2>
-        <p style={{ fontSize: "14px", color: "#666", marginBottom: "20px" }}>
+        {/* HEADER */}
+        <h2 style={{ color: colors.dark }}>Complete Your Profile</h2>
+        <p style={{ fontSize: "14px", color: colors.gray }}>
           Just a few details to get started 🚀
         </p>
 
         {/* NAME */}
         <input
           type="text"
-          placeholder="Enter your name"
+          placeholder="Your Name"
           value={name}
           onChange={(e) => setName(e.target.value)}
           style={{
+            marginTop: "20px",
             width: "100%",
-            padding: "10px",
-            marginBottom: "15px",
-            borderRadius: "8px",
-            border: "1px solid #ccc",
+            padding: "12px",
+            borderRadius: "10px",
+            border: "1px solid #EAF2FF",
+            outline: "none",
           }}
         />
 
         {/* PHONE */}
         <input
           type="tel"
-          placeholder="Enter phone number"
+          placeholder="Phone Number"
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
           style={{
+            marginTop: "12px",
             width: "100%",
-            padding: "10px",
-            marginBottom: "20px",
-            borderRadius: "8px",
-            border: "1px solid #ccc",
+            padding: "12px",
+            borderRadius: "10px",
+            border: "1px solid #EAF2FF",
+            outline: "none",
           }}
         />
 
@@ -98,18 +101,31 @@ function CompleteProfile({ setProfileDone }) {
           onClick={handleSave}
           disabled={loading}
           style={{
+            marginTop: "20px",
             width: "100%",
             padding: "12px",
-            borderRadius: "10px",
+            borderRadius: "12px",
             border: "none",
-            background: "#000",
-            color: "#fff",
+            background: colors.primary,
+            color: colors.white,
             fontWeight: "600",
             cursor: "pointer",
           }}
         >
-          {loading ? "Saving..." : "Save & Continue"}
+          {loading ? "Saving..." : "Continue"}
         </button>
+
+        {/* TRUST TEXT */}
+        <p
+          style={{
+            marginTop: "15px",
+            fontSize: "12px",
+            color: colors.gray,
+            textAlign: "center",
+          }}
+        >
+          Your details are safe and secure 🔒
+        </p>
       </div>
     </div>
   );

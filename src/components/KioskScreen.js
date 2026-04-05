@@ -1,21 +1,23 @@
 import React, { useState } from "react";
 import { db } from "../firebase";
-import { collection, query, where, getDocs, updateDoc, doc } from "firebase/firestore";
+import {collection,query,where,getDocs,updateDoc,doc,}from "firebase/firestore";
+import colors from "../theme/colors";
 
 function KioskScreen({ setPage }) {
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
 
-  // 🔐 यह हर मशीन के लिए अलग होगा
   const KIOSK_ID = "kiosk_1"; // 🔥 change per kiosk
 
   const handleVerify = async () => {
-    if (!code) {
-      alert("Enter code");
+    if (!code.trim()) {
+      setMessage("⚠️ Please enter code");
       return;
     }
 
     setLoading(true);
+    setMessage("");
 
     try {
       const q = query(
@@ -28,7 +30,7 @@ function KioskScreen({ setPage }) {
       const snapshot = await getDocs(q);
 
       if (snapshot.empty) {
-        alert("Invalid or already used code ❌");
+        setMessage("❌ Invalid or already used code");
         setLoading(false);
         return;
       }
@@ -36,49 +38,111 @@ function KioskScreen({ setPage }) {
       const orderDoc = snapshot.docs[0];
       const order = orderDoc.data();
 
-      console.log("Order found:", order);
-
-      // ✅ status update (verified)
       await updateDoc(doc(db, "orders", orderDoc.id), {
         status: "verified",
       });
 
-      alert("Code verified ✅ Printing...");
+      setMessage("✅ Printing started...");
 
-      // 👉 अभी सिर्फ log करेंगे
       console.log("PRINT TRIGGER:", order.fileUrl);
-
-      // बाद में यहाँ actual printer trigger आएगा
 
     } catch (error) {
       console.error(error);
-      alert("Error verifying code");
+      setMessage("❌ Error verifying code");
     }
 
     setLoading(false);
   };
 
   return (
-    <div style={{ padding: "20px", textAlign: "center" }}>
-      <h2>🖨️ Kiosk Screen</h2>
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "#F8FAFC",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        padding: "20px",
+      }}
+    >
+      <div
+        style={{
+          width: "100%",
+          maxWidth: "400px",
+          background: colors.white,
+          borderRadius: "20px",
+          padding: "25px",
+          boxShadow: "0 15px 40px rgba(0,0,0,0.1)",
+          textAlign: "center",
+        }}
+      >
+        <h2 style={{ color: colors.dark }}>🖨️ Print Station</h2>
 
-      <input
-        type="text"
-        placeholder="Enter Code"
-        value={code}
-        onChange={(e) => setCode(e.target.value)}
-        style={{ padding: "10px", fontSize: "18px" }}
-      />
+        <p style={{ color: colors.gray, fontSize: "14px" }}>
+          Enter your order code to print
+        </p>
 
-      <br /><br />
+        {/* 🔢 INPUT */}
+        <input
+          type="text"
+          placeholder="Enter Code"
+          value={code}
+          onChange={(e) => setCode(e.target.value)}
+          style={{
+            marginTop: "15px",
+            width: "100%",
+            padding: "14px",
+            fontSize: "18px",
+            borderRadius: "12px",
+            border: "1px solid #EAF2FF",
+            outline: "none",
+            textAlign: "center",
+            letterSpacing: "2px",
+          }}
+        />
 
-      <button onClick={handleVerify} disabled={loading}>
-        {loading ? "Checking..." : "Print"}
-      </button>
+        {/* 🔘 BUTTON */}
+        <button
+          onClick={handleVerify}
+          disabled={loading}
+          style={{
+            marginTop: "15px",
+            width: "100%",
+            padding: "14px",
+            borderRadius: "12px",
+            border: "none",
+            background: colors.primary,
+            color: colors.white,
+            fontSize: "16px",
+            fontWeight: "600",
+            cursor: "pointer",
+          }}
+        >
+          {loading ? "Checking..." : "Print Document"}
+        </button>
 
-      <br /><br />
+        {/* 💬 MESSAGE */}
+        {message && (
+          <p style={{ marginTop: "12px", fontSize: "14px" }}>
+            {message}
+          </p>
+        )}
 
-      <button onClick={() => setPage("dashboard")}>Back</button>
+        {/* 🔙 BACK */}
+        <button
+          onClick={() => setPage("home")}
+          style={{
+            marginTop: "20px",
+            background: "none",
+            border: "none",
+            color: colors.primary,
+            cursor: "pointer",
+            fontSize: "14px",
+          }}
+        >
+          ⬅ Back
+        </button>
+      </div>
     </div>
   );
 }
