@@ -1,4 +1,5 @@
 import React from "react";
+import colors from "../theme/colors";
 
 function Dashboard({ user, setPage }) {
   const userName =
@@ -8,6 +9,7 @@ function Dashboard({ user, setPage }) {
     "User";
 
   return (
+  
     <div style={{ padding: "20px", paddingBottom: "90px" }}>
       
       {/* 👋 HEADER */}
@@ -24,8 +26,8 @@ function Dashboard({ user, setPage }) {
           marginTop: "20px",
           padding: "20px",
           borderRadius: "16px",
-          background: "linear-gradient(135deg, #000, #333)",
-          color: "#fff",
+          background: colors.primary,
+          color: colors.white,
         }}
       >
         <h3>⚡ Upload & Print Instantly</h3>
@@ -40,8 +42,8 @@ function Dashboard({ user, setPage }) {
             padding: "10px 15px",
             borderRadius: "8px",
             border: "none",
-            background: "#fff",
-            color: "#000",
+            background: colors.white,
+            color: colors.primary,
             cursor: "pointer",
             fontWeight: "600",
           }}
@@ -59,7 +61,7 @@ function Dashboard({ user, setPage }) {
             marginTop: "10px",
             padding: "15px",
             borderRadius: "12px",
-            background: "#f5f5f5",
+            background: colors.white,
             fontSize: "14px",
             color: "#555",
           }}
@@ -84,7 +86,7 @@ function Dashboard({ user, setPage }) {
             style={{
               flex: 1,
               padding: "15px",
-              background: "#eee",
+              background: colors.white,
               borderRadius: "12px",
               textAlign: "center",
               cursor: "pointer",
@@ -98,7 +100,7 @@ function Dashboard({ user, setPage }) {
             style={{
               flex: 1,
               padding: "15px",
-              background: "#eee",
+              background: colors.white,
               borderRadius: "12px",
               textAlign: "center",
               cursor: "pointer",
@@ -117,7 +119,7 @@ function Dashboard({ user, setPage }) {
 
         <button
           onClick={() =>
-            window.open("https://wa.me/919999999999", "_blank") // 👉 अपना नंबर डालना
+            window.open("https://wa.me/917206726848", "_blank") // 👉 अपना नंबर डालना
           }
           style={{
             padding: "10px 20px",
