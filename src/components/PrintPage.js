@@ -18,19 +18,24 @@ function PrintPage({ setPage }) {
   const [printSide, setPrintSide] = useState("single");
   const [printType, setPrintType] = useState("bw");
 
+  const [loading, setLoading] = useState(false);
   const [paid, setPaid] = useState(false);
   const [code, setCode] = useState("");
 
-  const bwPrice = 5;
-  const colorPrice = 10;
+  const selectedKiosk = JSON.parse(localStorage.getItem("selectedKiosk"));
 
-  const pricePerPage = printType === "color" ? colorPrice : bwPrice;
+  const pricePerPage = printType === "color" ? 10 : 5;
   const effectivePages =
     printSide === "double" ? Math.ceil(pages / 2) : pages;
 
   const totalAmount = effectivePages * copies * pricePerPage;
 
-  // 📂 FILE SELECT
+  // 🔢 ORDER CODE GENERATOR (fallback)
+  const generateCode = () => {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+  };
+
+  // 📂 FILE UPLOAD + PREVIEW
   const handleFileChange = async (e) => {
     const selectedFiles = Array.from(e.target.files);
     setFiles(selectedFiles);
@@ -46,7 +51,7 @@ function PrintPage({ setPage }) {
         totalPages += pdf.numPages;
 
         const page = await pdf.getPage(1);
-        const viewport = page.getViewport({ scale: 1 });
+        const viewport = page.getViewport({ scale: 1.5 });
 
         const canvas = document.createElement("canvas");
         const context = canvas.getContext("2d");
@@ -67,12 +72,10 @@ function PrintPage({ setPage }) {
     setPreviews(previewArr);
   };
 
-  // 💳 PAYMENT
+  // 💳 PAYMENT FLOW
   const handlePayment = async () => {
-    const selectedKiosk = JSON.parse(localStorage.getItem("selectedKiosk"));
-
     if (!selectedKiosk) {
-      alert("Please select a kiosk first");
+      alert("Please select kiosk first");
       return;
     }
 
@@ -81,24 +84,32 @@ function PrintPage({ setPage }) {
       return;
     }
 
+    if (!window.Razorpay) {
+      alert("Razorpay not loaded");
+      return;
+    }
+
     try {
+      setLoading(true);
+
+      // 📤 Upload
       const formData = new FormData();
       files.forEach((file) => formData.append("files", file));
 
-      const res = await axios.post(
+      const uploadRes = await axios.post(
         "https://a4stationbackend.onrender.com/upload",
         formData
       );
 
-      const uploadedFileName = res.data.filename;
+      const fileName = uploadRes.data.filename;
 
+      // 🧾 Create order
       const { data: order } = await axios.post(
         "https://a4stationbackend.onrender.com/create-order",
         {
-          pages: effectivePages,
-          copies,
-          printType,
-          printSide,
+         pages : effectivePages,
+         copies : copies,
+         printType : printType,
         }
       );
 
@@ -107,20 +118,31 @@ function PrintPage({ setPage }) {
         amount: order.amount,
         currency: "INR",
         name: "A4Station",
+        description: "Print Service",
         order_id: order.id,
 
         handler: async function (response) {
-          const verify = await axios.post(
-            "https://a4stationbackend.onrender.com/verify-payment",
-            {
-              ...response,
-              fileName: uploadedFileName,
-            }
-          );
+          try {
+            const verifyRes = await axios.post(
+              "https://a4stationbackend.onrender.com/verify-payment",
+              {
+                ...response,
+                fileName,
+              }
+            );
 
-          if (verify.data.success) {
+            // 🔥 Order code logic
+            let orderCode;
+
+            if (verifyRes.data.success && verifyRes.data.code) {
+              orderCode = verifyRes.data.code;
+            } else {
+              orderCode = generateCode(); // fallback
+            }
+
+            // 🔥 Save in Firestore
             await addDoc(collection(db, "orders"), {
-              code: verify.data.code,
+              code: orderCode,
               amount: totalAmount,
               pages: effectivePages,
               copies,
@@ -133,8 +155,11 @@ function PrintPage({ setPage }) {
               status: "pending",
             });
 
-            setCode(verify.data.code);
+            setCode(orderCode);
             setPaid(true);
+          } catch (err) {
+            console.error(err);
+            alert("Verification failed");
           }
         },
 
@@ -143,71 +168,74 @@ function PrintPage({ setPage }) {
 
       const rzp = new window.Razorpay(options);
       rzp.open();
-    } catch (err) {
-      console.error(err);
+
+    } catch (error) {
+      console.error(error);
       alert("Payment failed");
     }
+
+    setLoading(false);
   };
 
   return (
     <div style={{ padding: "20px", paddingBottom: "90px" }}>
-      
       <button onClick={() => setPage("home")}>⬅ Back</button>
 
       {!paid ? (
-        <div
-          style={{
-            marginTop: "15px",
-            padding: "20px",
-            borderRadius: "16px",
-            background: colors.white,
-            boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
-          }}
-        >
+        <div>
           <h2>Print Document</h2>
 
-          <input
-            type="file"
-            multiple
-            onChange={handleFileChange}
-          />
+          <p>Kiosk: {selectedKiosk?.name || "Not selected"}</p>
+
+          <input type="file" multiple onChange={handleFileChange} />
 
           <p>Pages: {pages}</p>
 
           {/* PREVIEW */}
           <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
             {previews.map((src, i) => (
-              <img key={i} src={src} style={{ width: "80px", borderRadius: "8px" }} />
+              <img
+                key={i}
+                src={src}
+                alt=""
+                style={{ width: "120px", borderRadius: "10px" }}
+              />
             ))}
+          </div>
+
+          {/* SETTINGS */}
+          <div>
+            <p>Copies:</p>
+            <input
+              type="number"
+              value={copies}
+              onChange={(e) => setCopies(Number(e.target.value))}
+            />
+
+            <p>Type:</p>
+            <select onChange={(e) => setPrintType(e.target.value)}>
+              <option value="bw">B/W</option>
+              <option value="color">Color</option>
+            </select>
+
+            <p>Side:</p>
+            <select onChange={(e) => setPrintSide(e.target.value)}>
+              <option value="single">Single</option>
+              <option value="double">Double</option>
+            </select>
           </div>
 
           <h3>Total: ₹ {totalAmount}</h3>
 
-          <button
-            onClick={handlePayment}
-            style={{
-              marginTop: "15px",
-              width: "100%",
-              padding: "12px",
-              borderRadius: "12px",
-              border: "none",
-              background: colors.primary,
-              color: colors.white,
-              fontWeight: "600",
-            }}
-          >
-            Pay & Print
+          <button onClick={handlePayment} disabled={loading}>
+            {loading ? "Processing..." : "Pay & Print"}
           </button>
         </div>
       ) : (
-        <div style={{ textAlign: "center", marginTop: "50px" }}>
+        <div style={{ textAlign: "center", marginTop: "40px" }}>
           <h2>🎉 Payment Successful</h2>
-          <p>Your Code:</p>
+          <p>Your Order Code:</p>
           <h1 style={{ color: colors.primary }}>{code}</h1>
-
-          <button onClick={() => setPage("home")}>
-            Go Home
-          </button>
         </div>
       )}
     </div>
