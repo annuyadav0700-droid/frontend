@@ -1,12 +1,13 @@
 import React from "react";
 import colors from "../theme/colors";
+import { Home, CloudUpload, FileText, User } from "lucide-react";
 
 function BottomNav({ page, setPage }) {
   const tabs = [
-    { id: "home", label: "Home", icon: "🏠" },
-    { id: "upload", label: "Upload", icon: "📤" },
-    { id: "orders", label: "Orders", icon: "📄" },
-    { id: "profile", label: "Profile", icon: "👤" },
+    { id: "home", label: "Home", Icon: Home },
+    { id: "upload", label: "Upload", Icon: CloudUpload },
+    { id: "orders", label: "Orders", Icon: FileText },
+    { id: "profile", label: "Profile", Icon: User },
   ];
 
   return (
@@ -45,14 +46,21 @@ function BottomNav({ page, setPage }) {
             }}
           >
             {/* ICON */}
-            <span
+            <div
               style={{
-                fontSize: "20px",
-                marginBottom: "2px",
+                marginBottom: "4px",
+                padding: "8px",
+                borderRadius: "12px",
+                background: isActive ? colors.light : "transparent",
+                color: isActive ? colors.primary : colors.gray,
+                transition: "all 0.3s ease",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
               }}
             >
-              {tab.icon}
-            </span>
+              <tab.Icon size={24} strokeWidth={isActive ? 2.5 : 2} />
+            </div>
 
             {/* LABEL */}
             {tab.label}

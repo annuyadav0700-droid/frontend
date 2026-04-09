@@ -75,8 +75,10 @@ function CompleteProfile({ setProfileDone }) {
             width: "100%",
             padding: "12px",
             borderRadius: "10px",
-            border: "1px solid #EAF2FF",
+            border: "2px solid #EAF2FF",
             outline: "none",
+            boxSizing: "border-box",
+            background: "#F8FAFC"
           }}
         />
 
@@ -91,8 +93,10 @@ function CompleteProfile({ setProfileDone }) {
             width: "100%",
             padding: "12px",
             borderRadius: "10px",
-            border: "1px solid #EAF2FF",
+            border: "2px solid #EAF2FF",
             outline: "none",
+            boxSizing: "border-box",
+            background: "#F8FAFC"
           }}
         />
 
@@ -100,17 +104,8 @@ function CompleteProfile({ setProfileDone }) {
         <button
           onClick={handleSave}
           disabled={loading}
-          style={{
-            marginTop: "20px",
-            width: "100%",
-            padding: "12px",
-            borderRadius: "12px",
-            border: "none",
-            background: colors.primary,
-            color: colors.white,
-            fontWeight: "600",
-            cursor: "pointer",
-          }}
+          className="pay-btn"
+          style={{ marginTop: "20px" }}
         >
           {loading ? "Saving..." : "Continue"}
         </button>

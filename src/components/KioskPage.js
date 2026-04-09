@@ -106,16 +106,8 @@ function KioskPage({ setPage }) {
                     );
                     setPage("print");
                   }}
-                  style={{
-                    flex: 1,
-                    padding: "10px",
-                    borderRadius: "10px",
-                    border: "none",
-                    background: colors.primary,
-                    color: colors.white,
-                    cursor: "pointer",
-                    fontWeight: "600",
-                  }}
+                  className="pay-btn"
+                  style={{ flex: 1, padding: "10px", fontSize: "14px", boxShadow: "none" }}
                 >
                   Select
                 </button>
@@ -128,15 +120,14 @@ function KioskPage({ setPage }) {
                       "_blank"
                     )
                   }
+                  className="pay-btn"
                   style={{
                     flex: 1,
                     padding: "10px",
-                    borderRadius: "10px",
-                    border: "none",
                     background: colors.light,
                     color: colors.primary,
-                    cursor: "pointer",
-                    fontWeight: "500",
+                    fontSize: "14px",
+                    boxShadow: "none"
                   }}
                 >
                   Open Map

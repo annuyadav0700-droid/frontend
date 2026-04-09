@@ -27,15 +27,30 @@ function Profile({ user, logout, setPage }) {
     <div style={{ padding: "20px", paddingBottom: "80px" }}>
       
       {/* 🔙 Back */}
-      <button onClick={() => setPage("home")}>⬅ Back</button>
+      <button
+        onClick={() => setPage("home")}
+        style={{
+          background: "none",
+          border: "none",
+          color: "#2563EB",
+          cursor: "pointer",
+          fontWeight: "600",
+          fontSize: "16px",
+          marginBottom: "10px",
+        }}
+      >
+        ⬅ Back
+      </button>
 
       {/* 👤 PROFILE CARD */}
       <div
         style={{
           marginTop: "20px",
-          padding: "20px",
-          borderRadius: "16px",
-          background: "#f5f5f5",
+          padding: "30px",
+          borderRadius: "24px",
+          background: "#FFFFFF",
+          border: "1px solid #EAF2FF",
+          boxShadow: "0 10px 25px rgba(0,0,0,0.05)",
           textAlign: "center",
         }}
       >
@@ -61,14 +76,10 @@ function Profile({ user, logout, setPage }) {
         {/* 🚪 Logout */}
         <button
           onClick={logout}
+          className="pay-btn"
           style={{
-            marginTop: "15px",
-            padding: "10px 20px",
-            borderRadius: "8px",
-            border: "none",
-            background: "#000",
-            color: "#fff",
-            cursor: "pointer",
+            marginTop: "20px",
+            background: "#EF4444"
           }}
         >
           Logout
@@ -83,14 +94,10 @@ function Profile({ user, logout, setPage }) {
           onClick={() =>
             window.open("https://wa.me/919999999999", "_blank") // 👉 अपना नंबर डालना
           }
+          className="pay-btn"
           style={{
-            padding: "10px 20px",
-            borderRadius: "20px",
-            border: "none",
             background: "#25D366",
-            color: "#fff",
-            cursor: "pointer",
-            fontWeight: "600",
+            width: "auto"
           }}
         >
           💬 Chat on WhatsApp

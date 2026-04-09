@@ -28,7 +28,20 @@ function History({ orders, setPage }) {
   return (
     <div style={{ padding: "20px", paddingBottom: "80px" }}>
       {/* 🔙 Back */}
-      <button onClick={() => setPage("home")}>⬅ Back</button>
+      <button
+        onClick={() => setPage("home")}
+        style={{
+          background: "none",
+          border: "none",
+          color: "#2563EB",
+          cursor: "pointer",
+          fontWeight: "600",
+          fontSize: "16px",
+          marginBottom: "20px",
+        }}
+      >
+        ⬅ Back
+      </button>
 
       <h2>My Orders</h2>
 
@@ -41,10 +54,12 @@ function History({ orders, setPage }) {
             <div
               key={index}
               style={{
-                padding: "15px",
-                marginBottom: "10px",
-                borderRadius: "12px",
-                background: "#f5f5f5",
+                padding: "20px",
+                marginBottom: "15px",
+                borderRadius: "16px",
+                background: "#FFFFFF",
+                border: "1px solid #EAF2FF",
+                boxShadow: "0 4px 15px rgba(0,0,0,0.05)"
               }}
             >
               <h3>🧾 Order #{order.code}</h3>
@@ -52,13 +67,23 @@ function History({ orders, setPage }) {
               <p>{order.date}</p>
               <p>Kiosk: {order.kioskName || "Not selected"}</p>
 
-              <button onClick={() => setSelectedOrder(order)}>
-                View Receipt
-              </button>
+              <div style={{ display: "flex", gap: "10px", marginTop: "15px" }}>
+                <button
+                  className="pay-btn"
+                  style={{ padding: "10px", flex: 1, fontSize: "14px", background: "#EAF2FF", color: "#2563EB", boxShadow: "none" }}
+                  onClick={() => setSelectedOrder(order)}
+                >
+                  View Receipt
+                </button>
 
-              <button onClick={() => downloadReceipt(order)}>
-                📄 Download
-              </button>
+                <button
+                  className="pay-btn"
+                  style={{ padding: "10px", flex: 1, fontSize: "14px", boxShadow: "none" }}
+                  onClick={() => downloadReceipt(order)}
+                >
+                  📄 Download
+                </button>
+              </div>
             </div>
           ))}
         </div>
@@ -106,15 +131,8 @@ function History({ orders, setPage }) {
 
             <button
               onClick={() => setSelectedOrder(null)}
-              style={{
-                marginTop: "10px",
-                padding: "8px 15px",
-                borderRadius: "8px",
-                border: "none",
-                background: "#000",
-                color: "#fff",
-                cursor: "pointer",
-              }}
+              className="pay-btn"
+              style={{ marginTop: "20px" }}
             >
               Close
             </button>

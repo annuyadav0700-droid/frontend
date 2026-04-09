@@ -53,18 +53,8 @@ function Login() {
         <button
           onClick={login}
           disabled={loading}
-          style={{
-            marginTop: "25px",
-            width: "100%",
-            padding: "12px",
-            borderRadius: "12px",
-            border: "1px solid #EAF2FF",
-            background: colors.white,
-            color: colors.dark,
-            cursor: "pointer",
-            fontWeight: "600",
-            fontSize: "15px",
-          }}
+          className="pay-btn"
+          style={{ marginTop: "25px" }}
         >
           {loading ? "Signing in..." : "Continue with Google"}
         </button>

@@ -105,18 +105,8 @@ function KioskScreen({ setPage }) {
         <button
           onClick={handleVerify}
           disabled={loading}
-          style={{
-            marginTop: "15px",
-            width: "100%",
-            padding: "14px",
-            borderRadius: "12px",
-            border: "none",
-            background: colors.primary,
-            color: colors.white,
-            fontSize: "16px",
-            fontWeight: "600",
-            cursor: "pointer",
-          }}
+          className="pay-btn"
+          style={{ marginTop: "20px" }}
         >
           {loading ? "Checking..." : "Print Document"}
         </button>

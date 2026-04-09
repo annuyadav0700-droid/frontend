@@ -25,9 +25,10 @@ function Dashboard({ user, setPage }) {
           marginTop: "20px",
           padding: "20px",
           borderRadius: "16px",
-          background: colors.primary,
-          color: colors.white,
-          boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
+          background: colors.white,
+          border: "2px solid #EAF2FF",
+          color: colors.dark,
+          boxShadow: "0 10px 25px rgba(0,0,0,0.05)",
         }}
       >
         <h3>⚡ Upload & Print Instantly</h3>
@@ -38,16 +39,11 @@ function Dashboard({ user, setPage }) {
 
         <button
           onClick={() => setPage("upload")}
+          className="pay-btn"
           style={{
             marginTop: "15px",
             padding: "10px 16px",
-            borderRadius: "10px",
-            border: "none",
-            background: colors.white,
-            color: colors.primary,
-            cursor: "pointer",
-            fontWeight: "600",
-            transition: "0.2s",
+            width: "auto"
           }}
         >
           Start Printing 🚀
@@ -130,14 +126,12 @@ function Dashboard({ user, setPage }) {
           onClick={() =>
             window.open("https://wa.me/917206726848", "_blank")
           }
+          className="pay-btn"
           style={{
+            marginTop: "15px",
             padding: "10px 20px",
-            borderRadius: "20px",
-            border: "none",
-            background: "#25D366",
-            color: "#fff",
-            cursor: "pointer",
-            fontWeight: "600",
+            background: "#2563EB", 
+            width: "auto"
           }}
         >
           💬 Chat on WhatsApp

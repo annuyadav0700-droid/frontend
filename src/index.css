@@ -1,7 +1,20 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  --primary-blue: #2563EB;
+  --light-blue: #EAF2FF;
+  --dark: #0F172A;
+  --white: #FFFFFF;
+  --border-color: #e2e8f0;
+  --text-muted: #64748b;
+  --success: #10B981;
+}
+
 body {
   margin: 0;
-  font-family: "Poppins", sans-serif;
-  background: #f3f4f6;
+  font-family: 'Inter', sans-serif;
+  background: var(--white); /* Updated from grey to White */
+  color: var(--dark);
 }
 
 .app {
@@ -9,130 +22,176 @@ body {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
+  /* Add subtle background gradients to make the app pop */
+  background-image: 
+    radial-gradient(circle at 10% 10%, var(--light-blue) 0%, transparent 40%),
+    radial-gradient(circle at 90% 90%, var(--light-blue) 0%, transparent 40%);
 }
 
 .card {
-  width: 380px;
-  background: white;
+  width: 90%;
+  max-width: 400px;
+  background: var(--white);
   padding: 30px;
-  border-radius: 25px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+  border-radius: 24px;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08); /* Premium shadow */
+  border: 1px solid rgba(15, 23, 42, 0.05);
 }
 
 .brand {
   text-align: center;
   margin-bottom: 30px;
-  font-size: 26px;
+  font-size: 28px;
   font-weight: 700;
+  color: var(--dark);
 }
 
+/* Upload Box */
 .upload-box {
-  border: 2px dashed #ddd;
+  border: 2px dashed var(--border-color);
+  background: #f8fafc; /* Slight off-white to contrast the main card */
   border-radius: 20px;
   padding: 40px 20px;
   text-align: center;
   cursor: pointer;
-  transition: 0.3s;
+  transition: all 0.3s ease;
   margin-bottom: 20px;
+  color: var(--primary-blue);
 }
 
 .upload-box:hover {
-  border-color: #000;
+  border-color: var(--primary-blue);
+  background: var(--light-blue);
 }
 
 .plus {
-  font-size: 40px;
-  font-weight: bold;
+  font-size: 48px;
+  font-weight: 600;
+  color: var(--primary-blue);
 }
 
+/* File Info Details */
 .info {
   display: flex;
   justify-content: space-between;
   margin-bottom: 25px;
   font-size: 14px;
-  color: #555;
+  color: var(--text-muted);
+  font-weight: 500;
 }
 
 .section {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .section label {
   display: block;
   margin-bottom: 8px;
-  font-size: 14px;
-  color: #444;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--dark);
 }
 
+/* Counter +/- Buttons */
 .counter {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 20px;
+  font-weight: 600;
+  font-size: 18px;
 }
 
 .counter button {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
+  width: 45px;
+  height: 45px;
+  border-radius: 14px;
   border: none;
-  background: #eee;
-  font-size: 18px;
+  background: var(--light-blue);
+  color: var(--primary-blue);
+  font-size: 20px;
+  font-weight: 600;
   cursor: pointer;
-  transition: 0.2s;
+  transition: all 0.2s ease;
 }
 
 .counter button:hover {
-  background: #000;
-  color: white;
+  background: var(--primary-blue);
+  color: var(--white);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
 }
 
+/* Toggle Options */
 .toggle {
   display: flex;
-  gap: 10px;
+  gap: 12px;
 }
 
 .toggle button {
   flex: 1;
-  padding: 12px;
-  border-radius: 12px;
-  border: 1px solid #ddd;
-  background: white;
+  padding: 14px;
+  border-radius: 14px;
+  border: 2px solid var(--border-color);
+  background: var(--white);
+  color: var(--text-muted);
+  font-weight: 600;
   cursor: pointer;
-  transition: 0.2s;
+  transition: all 0.2s ease;
+}
+
+.toggle button:hover {
+  border-color: var(--primary-blue);
+  color: var(--primary-blue);
+  background: var(--light-blue);
 }
 
 .toggle button.active {
-  background: #000;
-  color: white;
-  border: none;
+  background: var(--primary-blue);
+  color: var(--white);
+  border-color: var(--primary-blue);
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25);
 }
 
 .total {
   text-align: center;
-  margin: 25px 0;
-  font-size: 22px;
+  margin: 30px 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--dark);
 }
 
+/* Primary Action Buttons */
 .pay-btn {
   width: 100%;
-  padding: 15px;
-  border-radius: 15px;
+  padding: 18px;
+  border-radius: 16px;
   border: none;
-  background: #000;
-  color: white;
-  font-size: 16px;
+  background: var(--primary-blue);
+  color: var(--white);
+  font-size: 18px;
   font-weight: 600;
   cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3);
 }
 
 .pay-btn:hover {
-  opacity: 0.8;
+  background: var(--light-blue);
+  color: var(--primary-blue);
+  box-shadow: none;
+  transform: translateY(-2px);
+}
+
+.pay-btn:active {
+  transform: translateY(0);
 }
 
 .success {
   text-align: center;
-  background: white;
+  background: var(--white);
   padding: 60px;
-  border-radius: 25px;
+  border-radius: 24px;
+  border: 2px solid rgba(16, 185, 129, 0.2);
+  background-image: linear-gradient(180deg, var(--white) 0%, rgba(16, 185, 129, 0.05) 100%);
 }
